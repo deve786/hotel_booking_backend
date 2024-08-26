@@ -24,11 +24,13 @@ const authRoute = require('./routes/authRoute');
 const hotelRoute = require('./routes/hotelRoute');
 const bookingRoute = require('./routes/bookingRoute');
 const userRoute = require('./routes/userRoutes');
+const reviewRoute = require('./routes/reviewRoute');
 
 app.use('/api/auth', authRoute);
 app.use('/api/hotels', hotelRoute);
 app.use('/api/bookings', bookingRoute);
 app.use('/api/users', userRoute);
+app.use('/api/review', reviewRoute);
 
 app.get('/',(req,res)=>{
     res.send("Hello")

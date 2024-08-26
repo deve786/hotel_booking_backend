@@ -25,7 +25,7 @@ exports.getHotelById = async (req, res) => {
 exports.createHotel = async (req, res) => {
     try {
         const { name, location, description, amenities,pricePerNight } = req.body;
-        console.log(req.body);
+        // console.log(req.body);
         
 
         const photos = req.files.map(file => file.path); // Array of image file paths
@@ -89,6 +89,16 @@ exports.deleteHotel = async (req, res) => {
         const hotel = await Hotel.findByIdAndDelete(req.params.id);
         if (!hotel) return res.status(404).json({ message: 'Hotel not found' });
         res.status(200).json({ message: 'Hotel deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
+exports.getRandomHotels = async (req, res) => {
+    try {
+        const randomHotels = await Hotel.aggregate([{ $sample: { size: 3 } }]);
+        res.status(200).json(randomHotels);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

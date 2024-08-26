@@ -28,7 +28,7 @@ exports.createBooking = async (req, res) => {
     try {
         // Extract data from request body
         const { user, hotelId, checkInDate, checkOutDate, guestCount, totalCost } = req.body;
-        console.log(user);
+        // console.log(user);
 
         // Create a new booking instance
         const booking = new Booking({
@@ -56,27 +56,32 @@ exports.createBooking = async (req, res) => {
 
 
 exports.getBookingsByUserId = async (req, res) => {
-    console.log('User ID:', req.params.id); // Debug line
     const { id } = req.params;
-
+    console.log(req.params);
+    
     try {
-        // Assuming you have `checkInDate` in your Booking model to determine if a booking is upcoming
+        // Get current date
         const currentDate = new Date();
-        const upcomingBookings = await Booking.find({ user: id, checkInDate: { $gt: currentDate } });
 
-        if (!upcomingBookings.length) {
-            return res.status(404).json({ message: 'No upcoming bookings found for this user' });
-        }
+        // Find upcoming bookings
+        const upcomingBookings = await Booking.find({
+            user: id,
+            checkInDate: { $lt: currentDate }
+        });
+        console.log(upcomingBookings);
+        
 
+        // Return the empty array with a success status
         res.status(200).json(upcomingBookings);
     } catch (error) {
+        // Send generic error message
         res.status(500).json({ message: 'Error fetching upcoming bookings for user', error });
     }
 };
 
 exports.getPastBookingsByUserId = async (req, res) => {
     const { id } = req.params;
-    console.log(id);
+    // console.log(id);
 
     try {
         // Find all bookings for the user where the check-out date is in the past
@@ -85,7 +90,7 @@ exports.getPastBookingsByUserId = async (req, res) => {
             checkOutDate: { $lt: new Date() }  // $lt is a MongoDB operator for 'less than'
         });
 
-        if (!pastBookings.length) return res.status(404).json({ message: 'No past bookings found for this user' });
+       
 
         res.status(200).json(pastBookings);
     } catch (err) {
@@ -99,6 +104,56 @@ exports.deleteBooking = async (req, res) => {
         const booking = await Booking.findByIdAndDelete(req.params.id);
         if (!booking) return res.status(404).json({ message: 'Booking not found' });
         res.status(200).json({ message: 'Booking deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+
+exports.userTotalBooking = async (req, res) => {
+    try {
+
+
+        const bookings = await Booking.find({ user: req.params.userId });
+
+
+        res.status(200).json(bookings);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.userPendingBookings = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const today = new Date();
+
+        // Find pending bookings where the checkout date is after today's date
+        const pendingBookings = await Booking.find({
+            user: userId,
+            checkOutDate: { $gte: today } // Filter for bookings where checkoutDate is greater than or equal to today's date
+        });
+
+        res.status(200).json(pendingBookings);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.userCompletedBookings = async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const today = new Date();
+
+        // Find completed bookings where the checkout date is before today's date
+        const completedBookings = await Booking.find({
+            user: userId,
+            checkOutDate: { $lt: today } // Filter for bookings where checkoutDate is less than today's date
+        });
+        console.log(completedBookings);
+
+
+        res.status(200).json(completedBookings);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

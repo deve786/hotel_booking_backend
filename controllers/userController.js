@@ -14,7 +14,7 @@ exports.getSingleUser = async (req, res) => {
     try {
 
         const userId = req.params.id;
-        console.log(userId);
+        // console.log(userId);
 
         // Find user by ID
         const user = await User.findById(userId)
